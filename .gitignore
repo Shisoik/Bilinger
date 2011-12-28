@@ -1,0 +1,13 @@
+/*
+!/.gitignore
+!/AndroidManifest.xml
+!/ant.properties
+!/build.xml
+!/proguard.cfg
+!/project.properties
+
+!/README*
+!/COPYING.txt
+
+!/src/
+!/res/
