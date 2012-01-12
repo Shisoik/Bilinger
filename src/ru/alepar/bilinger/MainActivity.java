@@ -11,6 +11,7 @@ package ru.alepar.bilinger;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
@@ -26,6 +27,8 @@ public class MainActivity extends Activity {
       "</head><body>";
 
   private static final String LOG_TAG = "MainActivity";
+  
+  private Handler handler = new Handler();
 
   /**
    * Called when the activity is first created.
@@ -45,8 +48,9 @@ public class MainActivity extends Activity {
       for (String str; (str = bibook.readLine()) != null; ) {
         final String[] sentences = str.split("\t");
         if (i++ == 4)
-          pageBuffer.append(sentences[1]).append(" ");
-        pageBuffer.append(sentences[0]).append(" ");
+          addSentence(pageBuffer, sentences[1], String.valueOf(i));
+        else
+          addSentence(pageBuffer, sentences[0], String.valueOf(i));
       }
       bibook.close();
     } catch (FileNotFoundException e) {
@@ -59,10 +63,16 @@ public class MainActivity extends Activity {
     // Render it.
     final WebView webView = (WebView) findViewById(R.id.visible_page);
     webView.setWebChromeClient(new LogWebChromeClient());
+    webView.addJavascriptInterface(new JavaScriptInterface(), "activity");
     final WebSettings webSettings = webView.getSettings();
     webSettings.setJavaScriptEnabled(true);
 
     webView.loadDataWithBaseURL("file:///android_res/raw/", pageBuffer.toString(), "text/html", "UTF-8", null);
+  }
+  
+  private static void addSentence(StringBuilder pageBuffer, String sentence, String id) {
+    pageBuffer.append("<a onClick='window.activity.selectSentence(\"").append(id).append("\")'>")
+        .append(sentence).append("</a> ");
   }
 
   /**
@@ -75,6 +85,18 @@ public class MainActivity extends Activity {
       Log.d(LOG_TAG, message);
       result.confirm();
       return true;
+    }
+  }
+  
+  final class JavaScriptInterface {
+    public void selectSentence(String id) {
+      final String str_id = id;
+      handler.post( new Runnable() {
+        @Override
+        public void run() {
+          Log.d(LOG_TAG, "Clicked sentence " + str_id);
+        }
+      });
     }
   }
 }
