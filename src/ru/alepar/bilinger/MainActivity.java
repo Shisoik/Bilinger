@@ -45,9 +45,9 @@ public class MainActivity extends Activity {
     try {
       bibook = new BufferedReader(
           new InputStreamReader(new FileInputStream("/mnt/sdcard/bibooks/sample.txt"), "UTF-8"));
-      for (String str; (str = bibook.readLine()) != null; ) {
+      for (String str; (str = bibook.readLine()) != null; i++) {
         final String[] sentences = str.split("\t");
-        if (i++ == 4)
+        if (i == 4)
           addSentence(pageBuffer, sentences[1], String.valueOf(i));
         else
           addSentence(pageBuffer, sentences[0], String.valueOf(i));
