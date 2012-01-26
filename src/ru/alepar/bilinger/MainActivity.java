@@ -13,12 +13,15 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.util.Pair;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends Activity {
   static final String PAGE_HEADER = "<!DOCTYPE html>\n<html><head><meta charset='utf-8'>" +
@@ -27,8 +30,10 @@ public class MainActivity extends Activity {
       "</head><body>";
 
   private static final String LOG_TAG = "MainActivity";
-  
-  private Handler handler = new Handler();
+
+  private final Handler handler = new Handler();
+
+  private final List<Pair<String,String>> text = new ArrayList<Pair<String, String>>();
 
   /**
    * Called when the activity is first created.
@@ -47,6 +52,7 @@ public class MainActivity extends Activity {
           new InputStreamReader(new FileInputStream("/mnt/sdcard/bibooks/sample.txt"), "UTF-8"));
       for (String str; (str = bibook.readLine()) != null; i++) {
         final String[] sentences = str.split("\t");
+        text.add(new Pair<String, String>(sentences[0], sentences[1]));
         if (i == 4)
           addSentence(pageBuffer, sentences[1], String.valueOf(i));
         else
@@ -69,7 +75,7 @@ public class MainActivity extends Activity {
 
     webView.loadDataWithBaseURL("file:///android_res/raw/", pageBuffer.toString(), "text/html", "UTF-8", null);
   }
-  
+
   private static void addSentence(StringBuilder pageBuffer, String sentence, String id) {
     pageBuffer.append("<a onClick='window.activity.selectSentence(\"").append(id).append("\")'>")
         .append(sentence).append("</a> ");
@@ -89,12 +95,17 @@ public class MainActivity extends Activity {
   }
   
   final class JavaScriptInterface {
+    @SuppressWarnings({"UnusedDeclaration"})
     public void selectSentence(String id) {
-      final String str_id = id;
+      final int str_id = Integer.parseInt(id);
       handler.post( new Runnable() {
         @Override
         public void run() {
-          Log.d(LOG_TAG, "Clicked sentence " + str_id);
+          if (str_id < 0 ||  str_id >= text.size()) {
+            Log.e(LOG_TAG, "Sentence id outside of text size.");
+          }
+          final Pair<String, String> pair = text.get(str_id);
+          new SentenceDialogFragment(pair.first, pair.second).show(getFragmentManager(),"dialog");
         }
       });
     }
