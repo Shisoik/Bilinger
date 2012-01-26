@@ -43,26 +43,35 @@ public class MainActivity extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.main);
 
-    // Prepare page
-    final StringBuilder pageBuffer = new StringBuilder(PAGE_HEADER);
     final BufferedReader bibook;
-    int i = 0;
     try {
       bibook = new BufferedReader(
           new InputStreamReader(new FileInputStream("/mnt/sdcard/bibooks/sample.txt"), "UTF-8"));
-      for (String str; (str = bibook.readLine()) != null; i++) {
+      for (String str; (str = bibook.readLine()) != null;) {
         final String[] sentences = str.split("\t");
         text.add(new Pair<String, String>(sentences[0], sentences[1]));
-        if (i == 4)
-          addSentence(pageBuffer, sentences[1], String.valueOf(i));
-        else
-          addSentence(pageBuffer, sentences[0], String.valueOf(i));
       }
       bibook.close();
     } catch (FileNotFoundException e) {
-      pageBuffer.append("File not found.");
+      Log.e(LOG_TAG, "File not found.");
     } catch (IOException e) {
-      pageBuffer.append("IOException: ").append(e.getMessage());
+      Log.e(LOG_TAG, "IOException: " + e.getMessage());
+    }
+  }
+
+  @Override
+  protected void onStart() {
+    super.onStart();
+
+    // Prepare the page.
+    final StringBuilder pageBuffer = new StringBuilder(PAGE_HEADER);
+    int i = 0;
+    for(Pair<String,String> pair : text) {
+      if (i == 4)
+        addSentence(pageBuffer, pair.second, String.valueOf(i));
+      else
+        addSentence(pageBuffer, pair.first, String.valueOf(i));
+      i++;
     }
     pageBuffer.append("</body></html>");
 
@@ -72,7 +81,6 @@ public class MainActivity extends Activity {
     webView.addJavascriptInterface(new JavaScriptInterface(), "activity");
     final WebSettings webSettings = webView.getSettings();
     webSettings.setJavaScriptEnabled(true);
-
     webView.loadDataWithBaseURL("file:///android_res/raw/", pageBuffer.toString(), "text/html", "UTF-8", null);
   }
 
