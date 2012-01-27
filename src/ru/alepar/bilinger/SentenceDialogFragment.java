@@ -14,9 +14,6 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
 
-/**
- * @author shisoik@google.com (Stanislav Belogolov)
- */
 public class SentenceDialogFragment extends DialogFragment {
   private final String nativeString;
   private final String foreignString;
